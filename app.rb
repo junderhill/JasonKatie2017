@@ -1,6 +1,6 @@
-require 'sinatra'
-require 'sinatra/param'
-require 'data_mapper'
+require 'rubygems'
+require 'bundler/setup'
+Bundler.require(:default)
 
 DataMapper.setup(:default, ENV['DATABASE_URL'] || "sqlite3://#{Dir.pwd}/development.db")
 
