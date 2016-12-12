@@ -2,7 +2,15 @@
 
 	<form method="post" action="/rsvpresponse">
 	  <input type="hidden" value="<%= code %>" name="invitecode" id="invitecode" />
+	  <input type="hidden" value="<%= previousresponse %>" id="previousresponse" />
 	  <h3 class="col-xs-12 text-center"><%= name %></h3>
+	<br />
+	<% if error.to_s != '' %>
+	  <div class="col-xs-12">
+	  <div class="alert alert-warning" role="alert"> 
+	    <strong>Oops!</strong> <%= error %> </div>
+	  </div>
+	<% end  %>
 	<br />
 	  <div class="form-group">
 	    <label class="col-xs-12">RSVP</label>
@@ -17,14 +25,14 @@
 	  <div class="form-group">
 	    <label class="col-xs-12">I promise to dance if you play..</label>
 		<div class="col-xs-12">
-	    		<input type="text" id="songrequest" name="songrequest" class="form-control" />
+	    		<input type="text" id="songrequest" name="songrequest" class="form-control" value="<%=songrequest%>"/>
 		</div>
 	  </div>
 
 	  <div class="form-group">
 	    <label class="col-xs-12">Dietary Requirements?</label>
 		<div class="col-xs-12">
-	    		<input type="text" name="dietaryrequirements" id="dietaryrequirements" class="form-control" />
+	    		<input type="text" name="dietaryrequirements" id="dietaryrequirements" class="form-control" value = "<%=dietary%>"/>
 		</div>
 	  </div>
 	  <div class="form-group col-xs-12 text-right">
@@ -33,3 +41,15 @@
 	</form>
 
 </div>
+
+<script type="text/javascript">
+	document.addEventListener("DOMContentLoaded", function() {
+		var previousResponse = document.getElementById("previousresponse");
+		if(previousResponse.value == 'false'){
+			document.getElementById('response').value='no';			
+		}
+		else{
+			document.getElementById('response').value='yes';			
+		}
+	});
+</script>

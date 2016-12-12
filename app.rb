@@ -38,7 +38,19 @@ post '/rsvp' do
     error = "Your invite code is not valid. Please try again."
     erb :index, :locals => {:error => error}
   else
-    erb :response, :locals => {:id => invite.id, :code => invite.code, :name => invite.name, :error => error}
+
+    previousresponse = false
+    dietary = ""
+    songrequest = ""
+
+    if invite.rsvp != nil
+      error = "You've already RSVP'd, Clicking 'RSVP' again will update your previous response."
+      previousresponse = invite.rsvp.response
+      dietary = invite.rsvp.dietary
+      songrequest = invite.rsvp.songrequest
+    end
+
+    erb :response, :locals => {:id => invite.id, :code => invite.code, :name => invite.name, :error => error, :previousresponse => previousresponse, :dietary => dietary, :songrequest => songrequest}
   end
 end
 
@@ -50,7 +62,13 @@ post '/rsvpresponse' do
     response = true
   end
 
-  invite.rsvp = Rsvp.new(:response => response, :dietary => params[:dietaryrequirements], :songrequest => params[:songrequest])
+  if invite.rsvp == nil
+  	invite.rsvp = Rsvp.new(:response => response, :dietary => params[:dietaryrequirements], :songrequest => params[:songrequest])
+  else
+	invite.rsvp.response = response
+	invite.rsvp.dietary = params[:dietaryrequirements]
+	invite.rsvp.songrequest = params[:songrequest]
+  end
 
   invite.save
 
