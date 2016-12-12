@@ -28,10 +28,14 @@ class InviteNotValid < StandardError
 end 
 
 get '/' do
+   if params[:invitecode] != nil
+     redirect "/#{params[:invitecode]}"
+   end
+
   erb :index, :locals => {:error => ""}
 end
 
-post '/rsvp' do
+get '/:invitecode' do
   begin
     param :invitecode,	String, required: true, transform: :upcase, format: /[A-Za-z]{5}/, raise: true
 
