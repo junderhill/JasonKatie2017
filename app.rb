@@ -25,3 +25,9 @@ DataMapper.finalize
 get '/' do
   erb :index
 end
+
+post '/rsvp' do
+  invite = Invite.first(:code => params[:invitecode])
+
+  erb :response, :locals => {:id => invite.id, :code => invite.code, :name => invite.name}
+end
