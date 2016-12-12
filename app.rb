@@ -1,4 +1,5 @@
 require 'sinatra'
+require 'sinatra/param'
 require 'data_mapper'
 
 DataMapper.setup(:default, ENV['DATABASE_URL'] || "sqlite3://#{Dir.pwd}/development.db")
@@ -24,13 +25,21 @@ DataMapper.finalize
 DataMapper.auto_upgrade!
 
 get '/' do
-  erb :index
+  erb :index, :locals => {:error => ""}
 end
 
 post '/rsvp' do
+  param :invitecode,	String, required: true, transform: :upcase, format: /[A-Za-z]{5}/
+
   invite = Invite.first(:code => params[:invitecode])
 
-  erb :response, :locals => {:id => invite.id, :code => invite.code, :name => invite.name}
+  error = ""
+  if invite == nil
+    error = "Your invite code is not valid. Please try again."
+    erb :index, :locals => {:error => error}
+  else
+    erb :response, :locals => {:id => invite.id, :code => invite.code, :name => invite.name, :error => error}
+  end
 end
 
 post '/rsvpresponse' do
