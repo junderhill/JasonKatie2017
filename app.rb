@@ -8,7 +8,7 @@ class Invite
   property :id,		Serial
   property :code, 	String, :required => true
   property :name,	String, :required => true
-  has 1, :rsvp,	:required => false
+  has 1, :rsvp
 end
 
 class Rsvp
@@ -21,6 +21,7 @@ class Rsvp
 end
 
 DataMapper.finalize
+DataMapper.auto_upgrade!
 
 get '/' do
   erb :index
@@ -30,4 +31,19 @@ post '/rsvp' do
   invite = Invite.first(:code => params[:invitecode])
 
   erb :response, :locals => {:id => invite.id, :code => invite.code, :name => invite.name}
+end
+
+post '/rsvpresponse' do
+  invite = Invite.first(:code => params[:invitecode])
+
+  response = false
+  if params[:response] == "yes"
+    response = true
+  end
+
+  invite.rsvp = Rsvp.new(:response => response, :dietary => params[:dietaryrequirements], :songrequest => params[:songrequest])
+
+  invite.save
+
+  erb :thanks
 end
