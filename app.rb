@@ -24,21 +24,24 @@ end
 DataMapper.finalize
 DataMapper.auto_upgrade!
 
+class InviteNotValid < StandardError  
+end 
+
 get '/' do
   erb :index, :locals => {:error => ""}
 end
 
 post '/rsvp' do
-  param :invitecode,	String, required: true, transform: :upcase, format: /[A-Za-z]{5}/
+  begin
+    param :invitecode,	String, required: true, transform: :upcase, format: /[A-Za-z]{5}/, raise: true
 
-  invite = Invite.first(:code => params[:invitecode])
+    invite = Invite.first(:code => params[:invitecode])
 
-  error = ""
-  if invite == nil
-    error = "Your invite code is not valid. Please try again."
-    erb :index, :locals => {:error => error}
-  else
+    if invite == nil
+      raise InviteNotValid
+    else
 
+    error = ""
     previousresponse = false
     dietary = ""
     songrequest = ""
@@ -51,6 +54,13 @@ post '/rsvp' do
     end
 
     erb :response, :locals => {:id => invite.id, :code => invite.code, :name => invite.name, :error => error, :previousresponse => previousresponse, :dietary => dietary, :songrequest => songrequest}
+   
+    rescue Sinatra::Param::InvalidParameterError
+	erb :index, :locals => { :error => "Please enter a correctly formatted invite code, it should be 5 letters." }
+    rescue InviteNotValid
+	erb :index, :locals => { :error => "Your invite code is not valid. Please try again." }
+    else
+    end
   end
 end
 
