@@ -40,27 +40,29 @@ post '/rsvp' do
     if invite == nil
       raise InviteNotValid
     else
+      puts 'valid invite'
+      error = ""
+      previousresponse = false
+      dietary = ""
+      songrequest = ""
 
-    error = ""
-    previousresponse = false
-    dietary = ""
-    songrequest = ""
+      if invite.rsvp != nil
+        puts 'already rsvpd'
+        error = "You've already RSVP'd, Clicking 'RSVP' again will update your previous response."
+        previousresponse = invite.rsvp.response
+        dietary = invite.rsvp.dietary
+        songrequest = invite.rsvp.songrequest
+      end
 
-    if invite.rsvp != nil
-      error = "You've already RSVP'd, Clicking 'RSVP' again will update your previous response."
-      previousresponse = invite.rsvp.response
-      dietary = invite.rsvp.dietary
-      songrequest = invite.rsvp.songrequest
+      puts 'about to build erb'
+      erb :response, :locals => {:id => invite.id, :code => invite.code, :name => invite.name, :error => error, :previousresponse => previousresponse, :dietary => dietary, :songrequest => songrequest}
+
     end
 
-    erb :response, :locals => {:id => invite.id, :code => invite.code, :name => invite.name, :error => error, :previousresponse => previousresponse, :dietary => dietary, :songrequest => songrequest}
-   
-    rescue Sinatra::Param::InvalidParameterError
-	erb :index, :locals => { :error => "Please enter a correctly formatted invite code, it should be 5 letters." }
-    rescue InviteNotValid
-	erb :index, :locals => { :error => "Your invite code is not valid. Please try again." }
-    else
-    end
+  rescue Sinatra::Param::InvalidParameterError
+    erb :index, :locals => { :error => "Please enter a correctly formatted invite code, it should be 5 letters." }
+  rescue InviteNotValid
+    erb :index, :locals => { :error => "Your invite code is not valid. Please try again." }
   end
 end
 
