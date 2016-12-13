@@ -6,3 +6,7 @@
 input[type=text], select{
 	margin-bottom: 30px;
 }
+
+.invitationname{
+	padding-bottom: 15px;
+}
