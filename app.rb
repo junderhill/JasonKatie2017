@@ -49,7 +49,7 @@ get '/:invitecode' do
     else
       puts 'valid invite'
       error = ""
-      previousresponse = false
+      previousresponse = true
       dietary = ""
       songrequest = ""
       numberattending = invite.numberattending
