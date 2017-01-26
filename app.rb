@@ -9,6 +9,8 @@ class Invite
   property :id,		Serial
   property :code, 	String, :required => true
   property :name,	String, :required => true
+  property :invite,	String, :required => true, :default => "D"
+  property :numberattending,    Integer, :required => true, :default => 0
   has 1, :rsvp
 end
 
@@ -17,6 +19,7 @@ class Rsvp
   property :response,	Boolean,:required => true
   property :dietary,	String
   property :songrequest,String
+  property :numberattending,  Integer
   property :responded,	DateTime, :default => DateTime.now
   belongs_to :invite, :key => true
 end
@@ -28,9 +31,9 @@ class InviteNotValid < StandardError
 end 
 
 get '/' do
-   if params[:invitecode] != nil
-     redirect "/#{params[:invitecode]}"
-   end
+  if params[:invitecode] != nil
+    redirect "/#{params[:invitecode]}"
+  end
 
   erb :index, :locals => {:error => ""}
 end
@@ -49,6 +52,7 @@ get '/:invitecode' do
       previousresponse = false
       dietary = ""
       songrequest = ""
+      numberattending = invite.numberattending
 
       if invite.rsvp != nil
         puts 'already rsvpd'
@@ -56,10 +60,11 @@ get '/:invitecode' do
         previousresponse = invite.rsvp.response
         dietary = invite.rsvp.dietary
         songrequest = invite.rsvp.songrequest
+        numberattending = invite.rsvp.numberattending
       end
 
       puts 'about to build erb'
-      erb :response, :locals => {:id => invite.id, :code => invite.code, :name => invite.name, :error => error, :previousresponse => previousresponse, :dietary => dietary, :songrequest => songrequest}
+      erb :response, :locals => {:id => invite.id, :code => invite.code, :name => invite.name, :error => error, :previousresponse => previousresponse, :numberattending => numberattending,:dietary => dietary, :songrequest => songrequest}
 
     end
 
@@ -71,22 +76,28 @@ get '/:invitecode' do
 end
 
 post '/rsvpresponse' do
-  invite = Invite.first(:code => params[:invitecode])
+  begin
+    param :numberattending, Integer, required: true, raise: true
+    invite = Invite.first(:code => params[:invitecode])
 
-  response = false
-  if params[:response] == "yes"
-    response = true
+    response = false
+    if params[:response] == "yes"
+      response = true
+    end
+
+    if invite.rsvp == nil
+      invite.rsvp = Rsvp.new(:response => response, :dietary => params[:dietaryrequirements], :songrequest => params[:songrequest], :numberattending => params[:numberattending])
+    else
+      invite.rsvp.response = response
+      invite.rsvp.dietary = params[:dietaryrequirements]
+      invite.rsvp.songrequest = params[:songrequest]
+      invite.rsvp.numberattending = params[:numberattending]
+    end
+
+    invite.save
+
+    erb :thanks
+  rescue Sinatra::Param::InvalidParameterError
+    erb :index, :locals => { :error => "Please enter a valid number of persons attending." }
   end
-
-  if invite.rsvp == nil
-  	invite.rsvp = Rsvp.new(:response => response, :dietary => params[:dietaryrequirements], :songrequest => params[:songrequest])
-  else
-	invite.rsvp.response = response
-	invite.rsvp.dietary = params[:dietaryrequirements]
-	invite.rsvp.songrequest = params[:songrequest]
-  end
-
-  invite.save
-
-  erb :thanks
 end
